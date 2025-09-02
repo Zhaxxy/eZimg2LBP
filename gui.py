@@ -29,7 +29,7 @@ def browse_output():
         output_var.set(file_path)
 
 def browse_images():
-    files = filedialog.askopenfilenames(filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.bmp;*.gif")])
+    files = filedialog.askopenfilenames(filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tex")])
     if files:
         images_var.set(FILE_DEMILTER.join(files))
 
