@@ -256,21 +256,26 @@ def images_to_lbp_mods(output_mod: Path, input_images: list[Path],/,description:
         json_file = tp / 'plan.json'
 
         for image_path in input_images:
-            # check if image exists
-            image_path.open().close()
-
             pretty_name = image_path.name if show_extensions else Path(image_path.name).with_suffix('').name
             tex_path = texs_folder / (image_path.name + '.tex')
             plan_path = plans_folder / (image_path.name + '.plan')
 
             image_path = image_path.resolve()
 
-            test_result = subprocess.run(_TEXCONV_EXE_ARGS + ('-m','0','-f','DXT5',image_path,'-y'),capture_output = True, shell=False, cwd=tp)
-            if test_result.returncode or test_result.stderr:
-                raise Exception(f'something went wrong with converting the image to dds, code: {test_result.returncode}, {test_result.stdout!r}')
+			with open(image_path,'rb') as f:
+				tex_header = f.read(4)
+
+			if tex_header == b'TEX\x20':
+				tex_bytes = image_path.read_bytes()
+			else:
+               test_result = subprocess.run(_TEXCONV_EXE_ARGS + ('-m','0','-f','DXT5',image_path,'-y'),capture_output = True, shell=False, cwd=tp)
+               if test_result.returncode or test_result.stderr:
+                   raise Exception(f'something went wrong with converting the image to dds, code: {test_result.returncode}, {test_result.stdout!r}')
 
 
-            tex_bytes = compress_dds_lbp(Path(tp,image_path.name).with_suffix('.dds').read_bytes())
+               tex_bytes = compress_dds_lbp(Path(tp,image_path.name).with_suffix('.dds').read_bytes())
+
+
             tex_hash = get_sha1_hex(tex_bytes)
             tex_path.write_bytes(tex_bytes)
 
